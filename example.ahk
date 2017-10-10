@@ -6,6 +6,7 @@ paths := {}
 paths["/"] := Func("HelloWorld")
 paths["404"] := Func("NotFound")
 paths["/logo"] := Func("Logo")
+paths["/wildcard/*"] := Func("WildcardPath")
 
 server := new HttpServer()
 server.LoadMimes(A_ScriptDir . "/mime.types")
@@ -24,6 +25,11 @@ NotFound(ByRef req, ByRef res) {
 
 HelloWorld(ByRef req, ByRef res) {
     res.SetBodyText("Hello World")
+    res.status := 200
+}
+
+WildcardPath(ByRef req, ByRef res) {
+    res.SetBodyText("Path: " + req.path)
     res.status := 200
 }
 

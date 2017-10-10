@@ -69,20 +69,79 @@ class HttpServer
     }
 
     SetPaths(paths) {
-        this.paths := paths
+        this.paths := {}
+        this.wildcardPaths := {}
+
+        ; Split wildcard paths from normal paths
+        for path, funcRef in paths {
+            if (path ~= ".*\/\*$") {
+
+                StringTrimRight, trimmedPath, path, 2
+                this.wildcardPaths[trimmedPath] := funcRef 
+
+            } else {
+                if (path ~= ".*\*.*") {
+                    throw Exception("Illegal path: " . path . "`nWildcard char must be last char in path", -1)
+                }
+
+                this.paths[path] := funcRef
+            }
+        }
     }
 
     Handle(ByRef request) {
         response := new HttpResponse()
-        if (!this.paths[request.path]) {
-            func := this.paths["404"]
-            response.status := 404
-            if (func)
-                func.(request, response, this)
-            return response
-        } else {
+
+        ; Check specific paths, if matching we're done
+        if (this.paths[request.path]) {
             this.paths[request.path].(request, response, this)
+            return response
         }
+
+        ; Look for the longest partial match
+        if (this.wildcardPaths.GetCapacity() != 0) {
+            
+            requestPathParts := StrSplit(request.path, "/")
+            requestPathLength := requestPathParts.Length()
+
+            longestPath := ""
+            longestPathSize := 0
+
+            for eachPath in this.wildcardPaths {
+                pathParts := StrSplit(eachPath, "/")
+
+                if (pathParts.Length() > requestPathLength)
+                    continue
+
+                for i, part in pathParts {
+                    if (i <= longestPathSize || !part)
+                        continue
+
+                    requestPathPart := requestPathParts[i]
+
+                    if (part == requestPathPart) {
+                        longestPath := eachPath
+                        longestPathSize := i
+                    } else {
+                        break
+                    }
+                }
+            }
+
+            if (longestPath) {
+                this.wildcardPaths[longestPath].(request, response, this)
+                return response
+            }
+        }
+
+        ; If no matches found, return 404
+        response.status := 404
+
+        func := this.paths["404"]
+        if (func) {
+            func.(request, response, this)
+        }
+
         return response
     }
 
