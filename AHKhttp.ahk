@@ -65,7 +65,7 @@ class HttpServer
         f.Close()
 
         response.SetBody(data, length)
-        res.headers["Content-Type"] := this.GetMimeType(file)
+        response.headers["Content-Type"] := this.GetMimeType(file)
     }
 
     SetPaths(paths) {
