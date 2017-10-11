@@ -72,18 +72,18 @@ class HttpServer
         this.paths := {}
         this.wildcardPaths := {}
 
-        ; Split wildcard paths from normal paths
         for path, funcRef in paths {
-            if (path ~= ".*\/\*$") {
+            if (path ~= "\*(?!$)") {
+                throw Exception("Illegal path: " . path . "`nWildcard char must be last char in path", -1)
+            }
 
+            if (SubStr(path, -1) == "/*") {
+                
+                ; Discard the trailing slash and asterisk
                 StringTrimRight, trimmedPath, path, 2
-                this.wildcardPaths[trimmedPath] := funcRef 
+                this.wildcardPaths[trimmedPath] := funcRef
 
             } else {
-                if (path ~= ".*\*.*") {
-                    throw Exception("Illegal path: " . path . "`nWildcard char must be last char in path", -1)
-                }
-
                 this.paths[path] := funcRef
             }
         }
