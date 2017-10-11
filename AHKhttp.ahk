@@ -27,6 +27,11 @@ class HttpServer
 {
     static servers := {}
 
+    __New() {        
+        if (FileExist(A_ScriptDir . "\favicon.ico"))
+            this.faviconFileName := A_ScriptDir . "\favicon.ico"
+    }
+
     LoadMimes(file) {
         if (!FileExist(file))
             return false
@@ -68,6 +73,10 @@ class HttpServer
         response.headers["Content-Type"] := this.GetMimeType(file)
     }
 
+    SetFavicon(file) {
+        this.faviconFileName := file
+    }
+
     SetPaths(paths) {
         this.paths := {}
         this.wildcardPaths := {}
@@ -103,6 +112,13 @@ class HttpServer
         if (pathFunction) {
             pathFunction.(request, response, this)
             return response
+        }
+
+        ; Favicon request
+        if (request.path == "/favicon.ico" && this.faviconFileName) {
+            this.ServeFile(response, this.faviconFileName)
+            response.status := 200
+            return response            
         }
 
         ; If no matches found, return 404
