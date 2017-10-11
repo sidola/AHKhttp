@@ -35,3 +35,4 @@ WildcardPath(ByRef req, ByRef res) {
 
 #include, %A_ScriptDir%\AHKhttp.ahk
 #include <AHKsock>
+

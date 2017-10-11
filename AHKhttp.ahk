@@ -99,39 +99,10 @@ class HttpServer
         }
 
         ; Look for the longest partial match
-        if (this.wildcardPaths.GetCapacity() != 0) {
-            
-            requestPathParts := StrSplit(request.path, "/")
-            requestPathLength := requestPathParts.Length()
-
-            longestPath := ""
-            longestPathSize := 0
-
-            for eachPath in this.wildcardPaths {
-                pathParts := StrSplit(eachPath, "/")
-
-                if (pathParts.Length() > requestPathLength)
-                    continue
-
-                for i, part in pathParts {
-                    if (i <= longestPathSize || !part)
-                        continue
-
-                    requestPathPart := requestPathParts[i]
-
-                    if (part == requestPathPart) {
-                        longestPath := eachPath
-                        longestPathSize := i
-                    } else {
-                        break
-                    }
-                }
-            }
-
-            if (longestPath) {
-                this.wildcardPaths[longestPath].(request, response, this)
-                return response
-            }
+        pathFunction := this.CheckPartialPathMatch(request.path, this.wildcardPaths)
+        if (pathFunction) {
+            pathFunction.(request, response, this)
+            return response
         }
 
         ; If no matches found, return 404
@@ -150,6 +121,41 @@ class HttpServer
         HttpServer.servers[port] := this
 
         AHKsock_Listen(port, "HttpHandler")
+    }
+
+    CheckPartialPathMatch(path, wildcardPaths) {
+        
+        if (wildcardPaths.GetCapacity() == 0)
+            return
+
+        requestPathParts := StrSplit(path, "/")
+        requestPathLength := requestPathParts.Length()
+
+        matchingPathFunction := ""
+        longestMatch := 0
+
+        for eachPath in wildcardPaths {
+            pathParts := StrSplit(eachPath, "/")
+
+            if (pathParts.Length() > requestPathLength)
+                continue
+
+            for i, part in pathParts {
+                if (i <= longestMatch || !part)
+                    continue
+
+                requestPathPart := requestPathParts[i]
+
+                if (part == requestPathPart) {
+                    matchingPathFunction := wildcardPaths[eachPath]
+                    longestMatch := i
+                } else {
+                    break
+                }
+            }
+        }
+
+        return matchingPathFunction
     }
 }
 

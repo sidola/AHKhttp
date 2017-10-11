@@ -1,5 +1,5 @@
 Documentation
-=====================
+===
 
 - [HttpServer](#httpserver)
 	* [LoadMimes(file)](#loadmimesfile)
@@ -25,8 +25,9 @@ Documentation
 	* [SetBodyText(text)](#setbodytexttext)
 	* [Generate](#generate)
 
+
 HttpServer
----------
+---
 
 #### LoadMimes(file)
 Loads mime types from a file.
@@ -47,7 +48,7 @@ Sets the responses body to the files data and sets the correct  ```Content-Type`
 #### SetPaths(paths)
 
 Takes an array of routes to server.
-```
+```autohotkey
 paths := {}
 paths["/"] := Func("SomeFunction")
 
@@ -63,41 +64,44 @@ Starts the http server on the specified port.
 #### Handle(ByRef request)
 Used internally to handle requests.
 
-----------
 
 HttpRequest
----------------
+---
+
 #### Headers
 Array containing headers from request.
-```
+```autohotkey
 request.headers["Some-Header"]
 ```
+
 #### Queries
 Array containing queries from request.
-```
+```autohotkey
 ; request -> /dog?name=frank
 msgbox % request.queries["name"] ; will display frank
 ```
 
 #### Path
 The path being requested.
-```
+```autohotkey
 request.path
 ```
+
 #### Method
 Method of request.
-```
+```autohotkey
 request.method
 ```
+
 #### Protocol
 Protocol of request.
-```
+```autohotkey
 request.protocol
 ```
 
 #### IsMultipart
 Returns true if the request is a multipart request.
-```
+```autohotkey
 MultiPart(ByRef req, ByRef res) {
 	if (req.IsMultipart() && !req.done)
 		res.status := 100
@@ -112,20 +116,19 @@ MultiPart(ByRef req, ByRef res) {
 #### Done
 Whether or not a multipart request is done being sent.
 
-----------
 
 HttpResponse
------------
+---
 
 #### Headers
 Array containing headers for response.
-```
+```autohotkey
 response.headers["Date"] := "Today"
 ```
 
 #### Protocol
 Protocol of response.
-```
+```autohotkey
 response.protocol
 ```
 
@@ -141,5 +144,3 @@ Sets the responses body as text.
 
 #### Generate
 Returns a buffer that contains the responses data.
-
-----------
