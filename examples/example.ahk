@@ -2,8 +2,8 @@
 #SingleInstance, force
 SetBatchLines, -1
 
-#include <AHKsock>
-#include ../AHKhttp.ahk
+; Assumes AHKhttp and AHKsock is located in /lib
+#include <AHKhttp>
 
 paths := {}
 paths["/"] := Func("HelloWorld")
