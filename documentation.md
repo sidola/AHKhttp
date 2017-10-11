@@ -5,6 +5,7 @@ Documentation
     * [LoadMimes(file)](#loadmimesfile)
     * [GetMimeType(file)](#getmimetypefile)
     * [ServeFile(ByRef response, file)](#servefilebyref-response-file)
+    * [SetFavicon(file)](#setfaviconfile)
     * [SetPaths(paths)](#setpathspaths)
     * [Serve(port)](#serveport)
     * [Handle(ByRef request)](#handlebyref-request)
@@ -52,6 +53,9 @@ FileServer(ByRef request, ByRef response, ByRef server) {
     response.status := 200
 }
 ```
+
+#### SetFavicon(file)
+Uses the given file as the favicon for all served pages. If no favicon is set, the server will attempt to serve a favicon from the following path `A_ScriptDir/favicon.ico`.
 
 #### SetPaths(paths)
 Takes a `paths` object which connects routes with controllers. Routes can be specific or wildcards.
