@@ -29,7 +29,7 @@ HelloWorld(ByRef req, ByRef res, ByRef server) {
 }
 ```
 
-See a more advanced example in [`example.ahk`](example.ahk).
+See a more advanced example in [`example.ahk`](examples/example.ahk).
 
 Documentation
 ---

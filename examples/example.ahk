@@ -2,6 +2,9 @@
 #SingleInstance, force
 SetBatchLines, -1
 
+#include <AHKsock>
+#include ../AHKhttp.ahk
+
 paths := {}
 paths["/"] := Func("HelloWorld")
 paths["404"] := Func("NotFound")
@@ -32,7 +35,3 @@ WildcardPath(ByRef req, ByRef res) {
     res.SetBodyText("Path: " + req.path)
     res.status := 200
 }
-
-#include, %A_ScriptDir%\AHKhttp.ahk
-#include <AHKsock>
-
