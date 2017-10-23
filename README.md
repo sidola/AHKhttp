@@ -1,6 +1,8 @@
 AHKhttp
 ===
 
+[![AHK](https://img.shields.io/badge/AHK-v1.1.21.00-lightgrey.svg?style=flat-square)](https://autohotkey.com/download/)
+
 Basic HTTP Server written in AutoHotkey.
 
 Dependencies
