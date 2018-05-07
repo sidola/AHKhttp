@@ -1,25 +1,34 @@
 class Uri
 {
-    Decode(str) {
-        Loop
-            If RegExMatch(str, "i)(?<=%)[\da-f]{1,2}", hex)
-                StringReplace, str, str, `%%hex%, % Chr("0x" . hex), All
-            Else Break
-        Return, str
+    ; https://github.com/ahkscript/libcrypt.ahk/blob/master/src/URI.ahk
+    
+    Encode(Url) { ; keep ":/;?@,&=+$#."
+        return this.LC_UriEncode(Url, "[0-9a-zA-Z:/;?@,&=+$#.]")
     }
 
-    Encode(str) {
-        f = %A_FormatInteger%
-        SetFormat, Integer, Hex
-        If RegExMatch(str, "^\w+:/{0,2}", pr)
-            StringTrimLeft, str, str, StrLen(pr)
-        StringReplace, str, str, `%, `%25, All
-        Loop
-            If RegExMatch(str, "i)[^\w\.~%]", char)
-                StringReplace, str, str, %char%, % "%" . Asc(char), All
-            Else Break
-        SetFormat, Integer, %f%
-        Return, pr . str
+    Decode(url) {
+        return this.LC_UriDecode(url)
+    }
+
+    LC_UriEncode(Uri, RE="[0-9A-Za-z]") {
+        VarSetCapacity(Var, StrPut(Uri, "UTF-8"), 0), StrPut(Uri, &Var, "UTF-8")
+        While Code := NumGet(Var, A_Index - 1, "UChar")
+            Res .= (Chr:=Chr(Code)) ~= RE ? Chr : Format("%{:02X}", Code)
+        Return, Res
+    }
+
+    LC_UriDecode(Uri) {
+        Pos := 1
+        While Pos := RegExMatch(Uri, "i)(%[\da-f]{2})+", Code, Pos)
+        {
+            VarSetCapacity(Var, StrLen(Code) // 3, 0), Code := SubStr(Code,2)
+            Loop, Parse, Code, `%
+                NumPut("0x" A_LoopField, Var, A_Index-1, "UChar")
+            Decoded := StrGet(&Var, "UTF-8")
+            Uri := SubStr(Uri, 1, Pos-1) . Decoded . SubStr(Uri, Pos+StrLen(Code)+1)
+            Pos += StrLen(Decoded)+1
+        }
+        Return, Uri
     }
 }
 
