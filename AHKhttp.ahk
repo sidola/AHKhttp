@@ -269,10 +269,15 @@ class HttpResponse
         FormatTime, date,, ddd, d MMM yyyy HH:mm:ss
         this.headers["Date"] := date
 
+        if (!this.headers["Content-Type"]) {
+            this.headers["Content-Type"] := "text/plain; charset=utf-8"
+        }
+
         headers := this.protocol . " " . this.status . "`r`n"
         for key, value in this.headers {
             headers := headers . key . ": " . value . "`r`n"
         }
+
         headers := headers . "`r`n"
         length := this.headers["Content-Length"]
 
