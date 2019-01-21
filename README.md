@@ -1,6 +1,7 @@
 AHKhttp
 ===
 
+[![Semver](https://img.shields.io/badge/Semver-1.0.0-blue.svg?style=flat-square)](https://semver.org/)
 [![AHK](https://img.shields.io/badge/AHK-v1.1.21.00-lightgrey.svg?style=flat-square)](https://autohotkey.com/download/)
 
 Basic HTTP Server written in AutoHotkey.
