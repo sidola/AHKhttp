@@ -1,7 +1,10 @@
+/**
+ * Handles URI encoding/decoding.
+ */
 class Uri
 {
     ; https://github.com/ahkscript/libcrypt.ahk/blob/master/src/URI.ahk
-    
+
     Encode(Url) { ; keep ":/;?@,&=+$#."
         return this.LC_UriEncode(Url, "[0-9a-zA-Z:/;?@,&=+$#.]")
     }
@@ -32,15 +35,37 @@ class Uri
     }
 }
 
+/**
+ * Creates a new HTTP server.
+ *
+ * Example usage:
+ *     server := new HttpServer()
+ *     server.SetPaths(paths)
+ *     server.Serve(8000)
+ */
 class HttpServer
 {
     static servers := {}
 
-    __New() {        
-        if (FileExist(A_ScriptDir . "\favicon.ico"))
+    /**
+     * Creates a new HttpServer instance.
+     */
+    __New() {
+        if (FileExist(A_ScriptDir . "\favicon.ico")) {
             this.faviconFileName := A_ScriptDir . "\favicon.ico"
+        }
     }
 
+    /**
+     * @deprecated
+     *     To be removed, a list of default MIME types will be provided
+     *     by the server.
+     *     
+     * Adds a MIME type mapping to the server.
+     * 
+     * @param {string} file
+     *     Path to the file containing the mime types.
+     */
     LoadMimes(file) {
         if (!FileExist(file)) {
             return false
@@ -54,7 +79,7 @@ class HttpServer
             info := StrSplit(data, " ")
             extType := info.Remove(1)
 
-            ; Seperates type of content and file types
+            ; Separates type of content and file types
             info := StrSplit(LTrim(SubStr(data, StrLen(extType) + 1)), " ")
 
             for i, ext in info {
@@ -65,6 +90,15 @@ class HttpServer
         return true
     }
 
+    /**
+     * Returns the MIME type of the given file.
+     * 
+     * @param {string} file
+     *     Path to the file.
+     *
+     * @return {string} The MIME type of the given file if one can be found
+     * otherwise the default "text/plain".
+     */
     GetMimeType(file) {
         defaultType := "text/plain"
 
@@ -74,7 +108,7 @@ class HttpServer
 
         SplitPath, file,,, ext
         extType := this.mimes[ext]
-        
+
         if (!extType) {
             return defaultType
         }
@@ -82,6 +116,14 @@ class HttpServer
         return extType
     }
 
+    /**
+     * Serves the given file to the client.
+     * 
+     * @param {obj} ByRef response
+     *     The response object provided by the handler function.  
+     * @param {string} file
+     *     Path to the file to server.
+     */
     ServeFile(ByRef response, file) {
         f := FileOpen(file, "r")
         length := f.RawRead(data, f.Length)
@@ -91,10 +133,23 @@ class HttpServer
         response.headers["Content-Type"] := this.GetMimeType(file)
     }
 
+    /**
+     * Sets the given file as the Favicon to serve.
+     * 
+     * @param {string} file
+     *     Path to the icon file.
+     */
     SetFavicon(file) {
         this.faviconFileName := file
     }
 
+    /**
+     * Sets the paths that should be handled by the server.
+     * 
+     * @param {obj} paths
+     *     An object where each key is a string containing the route
+     *     for a given path, and its value is the controller function for that route.
+     */
     SetPaths(paths) {
         this.paths := {}
         this.wildcardPaths := {}
@@ -105,7 +160,7 @@ class HttpServer
             }
 
             if (SubStr(path, -1) == "/*") {
-                
+
                 ; Discard the trailing slash and asterisk
                 StringTrimRight, trimmedPath, path, 2
                 this.wildcardPaths[trimmedPath] := funcRef
@@ -116,6 +171,12 @@ class HttpServer
         }
     }
 
+    /**
+     * Handles the request, routing it to the correct controller function.
+     * 
+     * @param {obj} ByRef request
+     *     The request object provided by the handler function.
+     */
     Handle(ByRef request) {
         response := new HttpResponse()
 
@@ -136,7 +197,7 @@ class HttpServer
         if (request.path == "/favicon.ico" && this.faviconFileName) {
             this.ServeFile(response, this.faviconFileName)
             response.status := 200
-            return response            
+            return response
         }
 
         ; If no matches found, return 404
@@ -150,6 +211,12 @@ class HttpServer
         return response
     }
 
+    /**
+     * Starts the server on the given port.
+     * 
+     * @param {number} port
+     *     The port number to listen on.
+     */
     Serve(port) {
         this.port := port
         HttpServer.servers[port] := this
@@ -157,10 +224,21 @@ class HttpServer
         AHKsock_Listen(port, "HttpHandler")
     }
 
+    /**
+     * Attempts to resolve a wildcard path.
+     * 
+     * @param {string} path
+     *     The path string to resolve.
+     * @param {array} wildcardPaths
+     *     An array of wildcard paths to resolve against.
+     *
+     * @return {func} Returns the controller function for the matching wildcard
+     * path if one is found, otherwise returns false.
+     */
     CheckPartialPathMatch(path, wildcardPaths) {
-        
-        if (wildcardPaths.GetCapacity() == 0)
-            return
+        if (wildcardPaths.GetCapacity() == 0) {
+            return false
+        }
 
         requestPathParts := StrSplit(path, "/")
         requestPathLength := requestPathParts.Length()
@@ -171,12 +249,14 @@ class HttpServer
         for eachPath in wildcardPaths {
             pathParts := StrSplit(eachPath, "/")
 
-            if (pathParts.Length() > requestPathLength)
+            if (pathParts.Length() > requestPathLength) {
                 continue
+            }
 
             for i, part in pathParts {
-                if (i <= longestMatch || !part)
+                if (i <= longestMatch || !part) {
                     continue
+                }
 
                 requestPathPart := requestPathParts[i]
 
@@ -193,11 +273,17 @@ class HttpServer
     }
 }
 
+/**
+ * The request object the server receives from a client.
+ *
+ * TODO: Understand and document this class.
+ */
 class HttpRequest
 {
     __New(data = "") {
-        if (data)
+        if (data) {
             this.Parse(data)
+        }
     }
 
     GetPathInfo(top) {
@@ -255,8 +341,16 @@ class HttpRequest
     }
 }
 
+/**
+ * The response object the server sends back to the client.
+ *
+ * TODO: Understand and document this class.
+ */
 class HttpResponse
 {
+    /**
+     * Creates a new instance.
+     */
     __New() {
         this.headers := {}
         this.status := 0
@@ -302,6 +396,11 @@ class HttpResponse
     }
 }
 
+/**
+ * The socket instance used to interface with AHKsock.
+ *
+ * TODO: Understand and document this class.
+ */
 class Socket
 {
     __New(socket) {
@@ -347,6 +446,11 @@ class Socket
     }
 }
 
+/**
+ * Buffer class to help working with byte-data.
+ *
+ * TODO: Understand and document this class.
+ */
 class Buffer
 {
     __New(len) {
@@ -400,6 +504,12 @@ class Buffer
     }
 }
 
+/**
+ * The handler function used with AHKsock.
+ *
+ * @see AHKsock documentation for a detailed explanation of the data passed to this
+ * function.
+ */
 HttpHandler(sEvent, iSocket = 0, sName = 0, sAddr = 0, sPort = 0, ByRef bData = 0, bDataLength = 0) {
     static sockets := {}
 
@@ -407,12 +517,16 @@ HttpHandler(sEvent, iSocket = 0, sName = 0, sAddr = 0, sPort = 0, ByRef bData = 
         sockets[iSocket] := new Socket(iSocket)
         AHKsock_SockOpt(iSocket, "SO_KEEPALIVE", true)
     }
+
     socket := sockets[iSocket]
 
     if (sEvent == "DISCONNECTED") {
+
         socket.request := false
         sockets[iSocket] := false
+
     } else if (sEvent == "SEND") {
+
         if (socket.TrySend()) {
             socket.Close()
         }
@@ -456,7 +570,7 @@ HttpHandler(sEvent, iSocket = 0, sName = 0, sAddr = 0, sPort = 0, ByRef bData = 
             if (!request.IsMultipart() || request.done) {
                 socket.Close()
             }
-        }    
+        }
 
     }
 }
